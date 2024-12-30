@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "report-writer"
+version = "0.1.0"
+description = ""
+authors = ["Ishmam <ishmam.a.solaiman@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11.7"
+langchain = "^0.3.13"
+langgraph = "^0.2.60"
+langchain-ollama = "^0.2.2"
+langchain-community = "^0.3.13"
+tavily-python = "^0.5.0"
+pydantic = "^2.10.4"
+streamlit = "^1.41.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
