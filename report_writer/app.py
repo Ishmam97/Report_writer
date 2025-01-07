@@ -14,10 +14,38 @@ import logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 def main():
-    st.title("Report Writing Assistant")
-    st.write("Researches a topic and writes a report on it.")
+    st.subheader("Multi-Agent Researcher Powered by langgraph 🤖")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.write("""
+        Built with langgraph and specialized tools, this multi-agent researcher 
+        system orchestrates powerful web searching and advanced multi-step 
+        planning so you can gather and analyze information with ease. 
+        More exciting capabilities are on the horizon, ensuring you stay ahead 
+        in your knowledge pursuits!
 
-    # API Key Inputs
+        **Use local models or cloud-based services** — the choice is yours. 
+        Privacy, performance, and flexibility are our top priorities, 
+        so you can tailor this application to fit your unique needs. 🔎💡""")
+    
+    with col2:
+        st.image("report_writer/img/agent_architecture.png", caption="Agent Architecture", width=200)
+
+    # Catchy, exciting description
+    st.subheader("Why You'll Love This App")
+    st.write("""
+        Get ready to supercharge your research and report-writing process! 
+        This multi-agent system harnesses powerful web searching and 
+        advanced multi-step planning, ensuring you have the most relevant 
+        information at your fingertips. Whether you’re exploring an academic topic, 
+        developing a business proposal, or crafting a technical document, 
+        our automated researcher and planner will simplify your workflow from start to finish.
+        
+        **Use local models or cloud-based services** — the choice is yours. 
+        Privacy, performance, and flexibility are our top priorities, 
+        so you can tailor this application to fit your unique needs. More to come soon! 🚀📚
+    """)
+
     st.header("API Credentials")
     openai_api_key = st.text_input(
         "Enter your OpenAI API key:",
@@ -30,27 +58,21 @@ def main():
         help="Your API key is used to access Tavily services."
     )
 
-    # Check if both API keys are provided
     if not openai_api_key or not tavily_api_key:
         st.warning("Please enter both your OpenAI and Tavily API keys to proceed.")
-        st.stop()  # Prevents the rest of the app from running
-
-    # User Inputs for Report Generation
+        st.stop()
+    
     st.header("Report Details")
     topic = st.text_input("Enter your research topic:")
     
-    # Initialize the ChatOpenAI model after validating API keys
-    model = "ollama"
+    model = "openai"
     llm = get_models(model, openai_api_key)
     graph = build_graph(llm, tavily_api_key)
     
-
-    # Check if name and topic are provided
     if not topic:
         st.warning("Please enter your research topic.")
         st.stop()
 
-    # Submit Button
     if st.button("Submit"):
        try:
         initial_state = {
@@ -62,28 +84,40 @@ def main():
             "critique": "",
             "content": [],
         }
-        # save the final state
-        
+
         thread = {"configurable":{"thread_id": "1"}}
+        
+        final_draft = ""
+
         for state in graph.stream(initial_state, thread):
             key = list(state.keys())[0]
+            
             if key == 'planner':
-                st.header('planner:')
+                st.subheader("Planner:")
                 st.write(state['planner']['plan'])
+            
             elif key == 'researcher':
-                st.header('researcher:')
-                for content in state['researcher']['content']:
-                    st.write(content)
+                with st.expander("Researcher (click to expand)"):
+                    for content in state['researcher']['content']:
+                        st.write(content)
+            
             elif key == 'generate':
-                st.header('generate:')
-                st.write(state['generate']['draft'])
+                with st.expander("Generate (click to expand)"):
+                    st.write(state['generate']['draft'])
+                # Update final_draft
+                final_draft = state['generate']['draft']
+            
             elif key == 'reflect':
-                st.header('reflect:')
-                st.write(state['reflect']["critique"])
+                with st.expander("Reflect (click to expand)"):
+                    st.write(state['reflect']["critique"])
+            
             elif key == 'research_critique':
-                st.header('research_critique:')
-                for content in state['research_critique']['content']:
-                    st.write(content)
+                with st.expander("Research Critique (click to expand)"):
+                    for content in state['research_critique']['content']:
+                        st.write(content)
+
+        st.header("Final Draft")
+        st.write(final_draft)
 
        except Exception as e:
             logger.error(f"An error occurred: {e}", exc_info=True, stack_info=True)
