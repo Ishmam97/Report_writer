@@ -62,6 +62,8 @@ def main():
             "critique": "",
             "content": [],
         }
+        # save the final state
+        
         thread = {"configurable":{"thread_id": "1"}}
         for state in graph.stream(initial_state, thread):
             key = list(state.keys())[0]
